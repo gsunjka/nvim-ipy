@@ -43,7 +43,8 @@ class RedirectingKernelManager(KernelManager):
 # because Dependency Injection
 def fakefactory(factory, handler):
     class theclass(factory):
-        call_handlers = handler
+        def call_handlers(self, msg):
+            handler(msg)
     return theclass
 
 class JupyterVimApp(JupyterApp, JupyterConsoleApp):
@@ -101,11 +102,7 @@ class ExclusiveHandler(object):
         self.handler = handler
         self.is_active = False
 
-    def __call__(self, *args):
-        # When assigned as a class attribute via fakefactory, Python may pass
-        # the channel instance as first arg (self, channel, msg) instead of
-        # just (self, msg). Use the last argument as the message.
-        msg = args[-1]
+    def __call__(self, msg):
         self.msgs.append(msg)
         if not self.is_active:
             self.is_active = True
